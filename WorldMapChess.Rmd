@@ -1,0 +1,38 @@
+---
+title: "World Map Chess"
+author: "Mark Barkell"
+date: "January 6, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r leafletfun, message=FALSE}
+library(leaflet)
+library(dplyr)
+library(stringr)
+df <- read.csv(textConnection(
+  "Piece,Lat,Long
+  WhiteKing,31.7738306,35.2441667
+  WhiteQueen,32,35"
+))
+
+chessHtmlEncoding <- read.csv(textConnection(
+  "Piece,HTML
+  WhiteKing,<b>This is bold</b>
+  WhiteQueen,This is <b>not</b> bold&#44; except not."
+))
+
+
+
+df[,"Piece"] <- str_trim(as.character(df[,"Piece"]))
+chessHtmlEncoding[,"Piece"] <- str_trim(as.character(chessHtmlEncoding[,"Piece"]))
+chessHtmlEncoding[,"HTML"] <- str_trim(as.character(chessHtmlEncoding[,"HTML"]))
+
+
+resolvedDataFrame <- df %>% dplyr::inner_join(chessHtmlEncoding)
+
+leaflet(resolvedDataFrame) %>% addTiles() %>% addMarkers(lng=as.vector(resolvedDataFrame[,"Long"]), lat=as.vector(resolvedDataFrame[,"Lat"]), popup = c(resolvedDataFrame[,"HTML"]) )
+```
